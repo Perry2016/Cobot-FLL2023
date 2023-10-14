@@ -1,6 +1,6 @@
 from hub import motion_sensor, port
 import motor_pair
-motor_pair.pair(motor_pair.PAIR_1, port.E, port.F)
+motor_pair.pair(motor_pair.PAIR_1, port.A, port.B)
 add = 30
 def move_forward():
     turn = (0 + motion_sensor.tilt_angles()[0])/2
