@@ -1,11 +1,7 @@
 from hub import motion_sensor, port
-import motor_pair
+import motor_pair, motor
 motor_pair.pair(motor_pair.PAIR_1, port.A, port.B)
 add = 30
-def move_forward(vel):
-    turn = (0 + motion_sensor.tilt_angles()[0])/2
-    motor_pair.move(motor_pair.PAIR_1, int(turn), velocity=vel, acceleration=100)
-    print(motion_sensor.tilt_angles()[0])
 
 def turn(amount):
     if amount < 0:
@@ -17,5 +13,12 @@ def turn(amount):
             motor_pair.move(motor_pair.PAIR_1, -100, velocity=100)
         motor_pair.stop(motor_pair.PAIR_1)
 
-while True:
-    turn(900-add)
+def move_forward(angle, vel, rotations):
+    motor.reset_relative_position
+    while motor.relative_position(port.B) / 360 < rotations:
+        turn = (angle + motion_sensor.tilt_angles()[0]/10)/2
+        motor_pair.move(motor_pair.PAIR_1, int(turn), velocity=vel, acceleration=100)
+    motor_pair.stop(motor_pair.PAIR_1)
+
+
+move_forward(0, 300, 2)
