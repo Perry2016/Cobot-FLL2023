@@ -1,0 +1,75 @@
+from hub import port
+from hub import motion_sensor
+import runloop
+import motor
+import motor_pair
+import color_sensor
+import color
+import time
+
+motor_pair.pair(motor_pair.PAIR_1, port.A, port.B)
+#motion_sensor.set_yaw_face(motion_sensor.FRONT)
+#motion_sensor.reset_yaw_angle(0)
+color_sensor.color(port.E)
+color_sensor.reflection(port.E)
+color_sensor.color(port.F)
+color_sensor.reflection(port.F)
+
+def move_G(rotation_G,degree_G,Speed_G,acceleration_G):
+    change = 0
+    old_change = 0
+    integral = 0
+    steeringSum = 0
+
+    pRegler=3
+    iRegler=1
+    dRegler=0
+    #a=0
+
+    gyroStartValue= degree_G
+
+    motor.reset_relative_position(port.B,0)
+    while motor.relative_position(port.B)/360 < rotation_G:
+
+        change = gyroStartValue + motion_sensor.tilt_angles()[0]/10
+        currenSteering = (change * pRegler + integral * iRegler + dRegler * (change - old_change))
+        currenSteering = max(-100, min(currenSteering, 100))
+
+        steeringSum += change
+        integral += change - old_change
+        old_change = change
+
+        motor_pair.move(motor_pair.PAIR_1, int(currenSteering), velocity = Speed_G, acceleration = acceleration_G)
+
+        #if motion_sensor.tilt_angles()[0]/10 > a:
+            #a=motion_sensor.tilt_angles()[0]/10
+        #print(a)
+    motor_pair.stop(motor_pair.PAIR_1)
+    time.sleep(0.5)
+
+def turn_G(de):
+    if de > 0:
+        while motion_sensor.tilt_angles()[0]/10 > -(de-2):
+            motor_pair.move(motor_pair.PAIR_1, 100, velocity = 100, acceleration = 100)
+        motor_pair.stop(motor_pair.PAIR_1)
+    else:
+        while motion_sensor.tilt_angles()[0]/10 < -(de+2):
+            motor_pair.move(motor_pair.PAIR_1, -100, velocity = 100, acceleration = 100)
+        motor_pair.stop(motor_pair.PAIR_1)
+    time.sleep(0.5)
+
+
+
+async def main():
+
+    move_G(1.8,0,500,100)
+
+    await motor.run_for_time(port.C,1000,500)
+
+    move_G(1,0,500,100)
+
+    await motor.run_for_time(port.C,4000,1000)
+
+    await motor_pair.move_for_degrees(motor_pair.PAIR_1, 360*5,0, velocity = -1000, acceleration = 1000)
+
+runloop.run(main())
